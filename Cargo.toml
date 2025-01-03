@@ -1,0 +1,8 @@
+[package]
+name = "ketoiced"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = { version = "0.13.1", features = ["image", "markdown", "multi-window", "tokio", "advanced"] }
+tokio = { version = "1.42.0", features = ["fs"] }
