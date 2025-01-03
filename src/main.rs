@@ -231,7 +231,7 @@ impl Keto {
                 .on_input(Message::WeightOnChange)
                 .id("Weight"),
             text(&self.weight_hint),
-            button("Save").on_press(Message::Save)
+            button("Save").on_press(Message::Save),
         ]
         .spacing(10);
         form.into()
@@ -243,6 +243,9 @@ impl Keto {
 }
 
 fn main() -> iced::Result {
+    // we need to activate the db pool
+    //
+    //
     iced::application("Experiment", Keto::update, Keto::view)
         .theme(Keto::theme)
         .run_with(Keto::new)
@@ -257,6 +260,7 @@ async fn parse_to_number(text: String) -> Result<f32, Error> {
     }
 }
 
+// When the macro is saved correctly we will get back a uuid
 async fn save_macro(
     name: String,
     protein: f32,
@@ -278,7 +282,8 @@ async fn save_macro(
 }
 
 #[derive(Debug, Clone)]
-enum Error {
+pub enum Error {
+    DBErrorCannotSave,
     NotParseAbleToNumber,
     ParseError(ErrorKind),
 }

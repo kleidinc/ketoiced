@@ -1,12 +1,60 @@
 #![allow(dead_code, unused_variables)]
+use crate::Error;
+use rust_decimal::Decimal;
 
-#[derive(Debug, Clone)]
+use sqlx::PgPool;
+
+#[derive(Debug, Clone, sqlx::FromRow, PartialEq)]
 pub struct MacroFood {
-    pub id: Option<String>,
+    pub macro_id: uuid::Uuid,
     pub name: String,
-    pub protein: f32,
-    pub carbohydrates: f32,
-    pub fat: f32,
-    pub weight_gram: f32,
-    pub kcal: f32,
+    pub protein: Decimal,
+    pub carbohydrates: Decimal,
+    pub fat: Decimal,
+    pub weight: i16,
+    pub kcalories: i16,
+}
+
+impl MacroFood {
+    fn new(
+        name: String,
+        protein: Decimal,
+        carbohydrates: Decimal,
+        fat: Decimal,
+        weight: i16,
+        kcalories: i16,
+    ) -> Self {
+        Self {
+            macro_id: uuid::Uuid::new_v4(), // not used anywhere
+            name,
+            protein,
+            carbohydrates,
+            fat,
+            weight,
+            kcalories,
+        }
+    }
+
+    pub async fn save(&self, pool: PgPool) -> Result<uuid::Uuid, anyhow::Error> {
+        let rec = sqlx::query!(
+            r#"
+INSERT INTO "macro_food"(name, protein, carbohydrates, fat, weight, kcalories)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING macro_id
+"#,
+            self.name,
+            self.protein,
+            self.carbohydrates,
+            self.fat,
+            self.weight,
+            self.kcalories
+        )
+        .fetch_one(&pool)
+        .await?;
+        Ok(rec.macro_id)
+    }
+
+    pub async fn get_all(pool: PgPool) -> Result<Vec<MacroFood>, anyhow::Error> {
+        todo!();
+    }
 }
