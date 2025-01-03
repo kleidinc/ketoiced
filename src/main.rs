@@ -1,8 +1,14 @@
-#![allow(dead_code, unused_imports, unused_variables)]
+#![allow(dead_code, unused_imports, unused_variables, clippy::needless_return)]
 mod keto;
 
+use anyhow::{Context, Error as AnyhowError};
 use iced::widget::{button, column, container, row, text, text_input};
+use iced::Error as IcedError;
 use iced::{Application, Element, Task, Theme};
+use sqlx::error::Error as SQLXError;
+use sqlx::postgres::PgConnection;
+use sqlx::postgres::PgPool;
+
 use std::io::ErrorKind;
 
 // TODO: Add the SQLX for saving the Macro Food
@@ -28,10 +34,10 @@ struct Keto {
     weight_f32: f32,
     weight_hint: String,
     weight_is_ok: bool,
-    kcal: String,
-    kcal_f32: f32,
-    kcal_hint: String,
-    kcal_is_ok: bool,
+    kcalories: String,
+    kcalories_f32: f32,
+    kcalories_hint: String,
+    kcalories_is_ok: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -81,16 +87,24 @@ impl Keto {
                 weight_f32: 0.0,
                 weight_hint: String::new(),
                 weight_is_ok: false,
-                kcal: String::new(),
-                kcal_f32: 0.0,
-                kcal_hint: String::new(),
-                kcal_is_ok: false,
+                kcalories: String::new(),
+                kcalories_f32: 0.0,
+                kcalories_hint: String::new(),
+                kcalories_is_ok: false,
             },
             Task::batch(vec![text_input::focus("Name_Of_Macro")]),
         )
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
+        // let pool =
+        //     if let Ok(pool) = PgPool::connect("postgres://alex:1234@localhost/ketoiced").await {
+        //         pool
+        //     } else {
+        //         // TODO: handle this error better
+        //         panic!();
+        //     };
+
         match message {
             Message::MacroNameOnChange(text) => {
                 self.marco_name = text;
@@ -160,17 +174,17 @@ impl Keto {
                 Task::none()
             }
             Message::KcalOnChange(text) => {
-                self.kcal = text.clone();
+                self.kcalories = text.clone();
                 Task::perform(parse_to_number(text.clone()), Message::KcalResult)
             }
             Message::KcalResult(result) => {
                 if let Ok(result) = result {
-                    self.kcal_f32 = result;
-                    self.kcal_hint = String::new();
-                    self.kcal_is_ok = true;
+                    self.kcalories_f32 = result;
+                    self.kcalories_hint = String::new();
+                    self.kcalories_is_ok = true;
                 } else {
-                    self.kcal_is_ok = false;
-                    self.kcal_hint = String::from("Has to be a number");
+                    self.kcalories_is_ok = false;
+                    self.kcalories_hint = String::from("Has to be a number");
                 }
 
                 Task::none()
@@ -181,7 +195,7 @@ impl Keto {
                     && self.protein_is_ok
                     && self.fat_is_ok
                     && self.weight_is_ok
-                    && self.kcal_is_ok
+                    && self.kcalories_is_ok
                 {
                     //
                     Task::perform(
@@ -191,7 +205,7 @@ impl Keto {
                             self.carbohydrates_f32,
                             self.fat_f32,
                             self.weight_f32,
-                            self.kcal_f32,
+                            self.kcalories_f32,
                         ),
                         Message::SaveResult,
                     )
@@ -207,6 +221,9 @@ impl Keto {
     }
 
     fn view(&self) -> Element<Message> {
+        //
+        // Activate the connectiontionpool here
+        //
         let form = column![
             text_input("Name of Macro", &self.marco_name)
                 .on_input(Message::MacroNameOnChange)
@@ -242,8 +259,11 @@ impl Keto {
     }
 }
 
-fn main() -> iced::Result {
+fn main() -> Result<(), IcedError> {
     // we need to activate the db pool
+    // let pool = PgPool::connect("postgres://alex:1234@localhost/kedoiced")
+    //     .await
+    //     .unwrap();
     //
     //
     iced::application("Experiment", Keto::update, Keto::view)
@@ -266,9 +286,13 @@ async fn save_macro(
     protein: f32,
     carbohydrates: f32,
     fat: f32,
-    weight: f32,
-    kcal: f32,
+    weight: i16,
+    kcalories: i16,
 ) -> Result<String, Error> {
+    // BUG: redo the types so the types correspond to the Postgres/sqlx
+    let result = keto::MacroFood::new(name, protein, carbohydrates, fat, weight, kcalories)
+        .save()
+        .await;
     dbg!(
         "The values passed: {} {} {} {} {} {}",
         &name,
@@ -276,14 +300,16 @@ async fn save_macro(
         &carbohydrates,
         &fat,
         &weight,
-        &kcal
+        &kcalories
     );
     Ok("".to_string())
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Error {
     DBErrorCannotSave,
     NotParseAbleToNumber,
     ParseError(ErrorKind),
+    IcedError,
+    SQLXError,
 }

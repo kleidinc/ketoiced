@@ -5,10 +5,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
-bigdecimal = "0.4.7"
 iced = { version = "0.13.1", features = ["image", "markdown", "multi-window", "tokio", "advanced"] }
-iced_aw = { version = "0.11.0", default-features = false, features = ["number_input"] }
 rust_decimal = "1.36.0"
 sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio", "time", "uuid", "migrate", "macros", "rust_decimal"] }
-tokio = { version = "1.42.0", features = ["fs"] }
+tokio = { version = "1.42.0", features = ["full"] }
 uuid = {version = "1.11.0", features = ["v4", "fast-rng"] }

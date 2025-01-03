@@ -1,8 +1,7 @@
 #![allow(dead_code, unused_variables)]
 use crate::Error;
 use rust_decimal::Decimal;
-
-use sqlx::PgPool;
+use sqlx::postgres::PgPool;
 
 #[derive(Debug, Clone, sqlx::FromRow, PartialEq)]
 pub struct MacroFood {
@@ -16,7 +15,7 @@ pub struct MacroFood {
 }
 
 impl MacroFood {
-    fn new(
+    pub fn new(
         name: String,
         protein: Decimal,
         carbohydrates: Decimal,
@@ -35,7 +34,10 @@ impl MacroFood {
         }
     }
 
-    pub async fn save(&self, pool: PgPool) -> Result<uuid::Uuid, anyhow::Error> {
+    pub async fn save(&self) -> Result<uuid::Uuid, anyhow::Error> {
+        let pool = PgPool::connect("postgres://alex:1234@localhost/ketoiced")
+            .await
+            .unwrap();
         let rec = sqlx::query!(
             r#"
 INSERT INTO "macro_food"(name, protein, carbohydrates, fat, weight, kcalories)
