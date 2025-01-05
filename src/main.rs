@@ -22,7 +22,6 @@ use helper::parse_to_number;
 
 use std::io::ErrorKind;
 
-// TODO: Add the SQLX for saving the Macro Food
 // TODO: Add focusable to input widgets and add keyshortcuts tab and shift tab to move around the form
 // TODO: Add keyshortcut C-s to save the form
 
@@ -306,8 +305,10 @@ async fn save_macro(
         .save()
         .await;
     if let Ok(uuid) = result {
+        dbg!(uuid);
         Ok(uuid)
     } else {
+        dbg!("There is an error");
         Err(Error::DBErrorCannotSave)
     }
 }
