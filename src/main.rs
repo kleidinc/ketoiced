@@ -1,4 +1,10 @@
-#![allow(dead_code, unused_imports, unused_variables, clippy::needless_return)]
+#![allow(
+    dead_code,
+    unused_imports,
+    unused_variables,
+    clippy::needless_return,
+    clippy::large_enum_variant
+)]
 mod helper;
 mod keto;
 
@@ -105,6 +111,9 @@ impl Keto {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::MacroNameOnChange(text) => {
+                // Add a check if the Macro name exists already!
+                // check_macro_name
+                self.macro_name_is_ok = true;
                 self.marco_name = text;
                 Task::none()
             }
@@ -223,7 +232,7 @@ impl Keto {
                     Task::none()
                 }
             }
-            Message::Focus(id) => text_input::focus(id),
+            Message::Focus(id) => return text_input::focus(id),
         }
     }
 
@@ -252,12 +261,12 @@ impl Keto {
                 .on_submit(Message::Focus("Weight")),
             text(&self.fat_hint),
             text_input("Weight", &self.weight)
+                .id("Weight")
                 .on_input(Message::WeightOnChange)
-                .on_submit(Message::Focus("Kcalories"))
-                .id("Weight"),
+                .on_submit(Message::Focus("Kcal")),
             text(&self.weight_hint),
             text_input("KCalories", &self.kcalories)
-                .id("KCalories")
+                .id("Kcal")
                 .on_input(Message::KcalOnChange)
                 .on_submit(Message::Focus("Name_Of_Macro")),
             text(&self.kcalories_hint),
