@@ -12,6 +12,8 @@ use sqlx::error::Error as SQLXError;
 use sqlx::postgres::PgConnection;
 use sqlx::postgres::PgPool;
 
+use helper::parse_to_number;
+
 use std::io::ErrorKind;
 
 // TODO: Add the SQLX for saving the Macro Food
@@ -66,6 +68,7 @@ enum Message {
     KcalResult(Result<f32, Error>),
     Save,
     SaveResult(Result<uuid::Uuid, Error>),
+    ShowResult(Result<keto::MacroFood, Error>),
 }
 
 impl Keto {
@@ -100,14 +103,6 @@ impl Keto {
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
-        // let pool =
-        //     if let Ok(pool) = PgPool::connect("postgres://alex:1234@localhost/ketoiced").await {
-        //         pool
-        //     } else {
-        //         // TODO: handle this error better
-        //         panic!();
-        //     };
-
         match message {
             Message::MacroNameOnChange(text) => {
                 self.marco_name = text;
@@ -218,9 +213,15 @@ impl Keto {
             }
             // The result in this case is the uuid of the saved macro food
             // TODO: use the id to get the saved macro food and show it below the form
-            Message::SaveResult(result) => {
-                println!("The macro has been saved! with the uuid: {:?}", result);
-                Task::none()
+            Message::SaveResult(result) => Task::none(),
+            Message::ShowResult(result) => {
+                if let Ok(result) = result {
+                    dbg!(result);
+                    Task::none()
+                } else {
+                    println!("WE didnt get anything");
+                    Task::none()
+                }
             }
             Message::Focus(id) => text_input::focus(id),
         }
@@ -255,9 +256,10 @@ impl Keto {
                 .on_submit(Message::Focus("Kcalories"))
                 .id("Weight"),
             text(&self.weight_hint),
-            text_input("Kilo Calories", &self.kcalories)
+            text_input("KCalories", &self.kcalories)
                 .id("KCalories")
-                .on_input(Message::KcalOnChange),
+                .on_input(Message::KcalOnChange)
+                .on_submit(Message::Focus("Name_Of_Macro")),
             text(&self.kcalories_hint),
             button("Save").on_press(Message::Save),
         ]
@@ -282,15 +284,6 @@ fn main() -> Result<(), IcedError> {
         .run_with(Keto::new)
 }
 
-async fn parse_to_number(text: String) -> Result<f32, Error> {
-    let number = text.parse::<f32>();
-    if let Ok(number) = number {
-        Ok(number)
-    } else {
-        Err(Error::NotParseAbleToNumber)
-    }
-}
-
 // When the macro is saved correctly we will get back a uuid
 async fn save_macro(
     name: String,
@@ -308,6 +301,19 @@ async fn save_macro(
     } else {
         Err(Error::DBErrorCannotSave)
     }
+}
+
+async fn get_macro_by_uuid(macro_id: uuid::Uuid) -> Option<Keto> {
+    // get the keto::MacroFood
+    // convert it to Macro
+    // from BigDecimal to str
+    let result = keto::MacroFood::get_macro_food_by_id(macro_id).await;
+    if let Ok(result) = result {
+        //
+    } else {
+        //
+    };
+    todo!();
 }
 
 #[derive(Debug, Clone, Copy)]
