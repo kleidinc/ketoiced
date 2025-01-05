@@ -37,9 +37,7 @@ impl MacroFood {
     }
 
     pub async fn save(&self) -> Result<uuid::Uuid, anyhow::Error> {
-        let pool = PgPool::connect("postgres://alex:1234@localhost/ketoiced")
-            .await
-            .unwrap();
+        let pool = helper::connect_to_db().await;
         let rec = sqlx::query!(
             r#"
 INSERT INTO "macro_food"(name, protein, carbohydrates, fat, weight, kcalories)
@@ -58,7 +56,14 @@ RETURNING macro_id
         Ok(rec.macro_id)
     }
 
+    pub async fn get_macro_food_by_id(id: uuid::Uuid) -> Result<MacroFood, anyhow::Error> {
+        todo!();
+    }
+
     pub async fn get_all(pool: PgPool) -> Result<Vec<MacroFood>, anyhow::Error> {
+        let pool = helper::connect_to_db().await;
+        // In this case we need to use the sqlx::query_as because we want to get
+        // the MacroFood type back in a Vec
         todo!();
     }
 }
