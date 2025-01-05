@@ -1,10 +1,13 @@
 #![allow(dead_code, unused_imports, unused_variables, clippy::needless_return)]
+mod helper;
 mod keto;
 
 use anyhow::{Context, Error as AnyhowError};
+use bigdecimal::BigDecimal;
 use iced::widget::{button, column, container, row, text, text_input};
 use iced::Error as IcedError;
 use iced::{Application, Element, Task, Theme};
+use rust_decimal::Decimal;
 use sqlx::error::Error as SQLXError;
 use sqlx::postgres::PgConnection;
 use sqlx::postgres::PgPool;
@@ -62,7 +65,7 @@ enum Message {
     KcalOnChange(String),
     KcalResult(Result<f32, Error>),
     Save,
-    SaveResult(Result<String, Error>),
+    SaveResult(Result<uuid::Uuid, Error>),
 }
 
 impl Keto {
@@ -213,8 +216,11 @@ impl Keto {
                     Task::none()
                 }
             }
+            // The result in this case is the uuid of the saved macro food
+            // TODO: use the id to get the saved macro food and show it below the form
             Message::SaveResult(result) => {
-                todo!();
+                println!("The macro has been saved! with the uuid: {:?}", result);
+                Task::none()
             }
             Message::Focus(id) => text_input::focus(id),
         }
@@ -246,8 +252,13 @@ impl Keto {
             text(&self.fat_hint),
             text_input("Weight", &self.weight)
                 .on_input(Message::WeightOnChange)
+                .on_submit(Message::Focus("Kcalories"))
                 .id("Weight"),
             text(&self.weight_hint),
+            text_input("Kilo Calories", &self.kcalories)
+                .id("KCalories")
+                .on_input(Message::KcalOnChange),
+            text(&self.kcalories_hint),
             button("Save").on_press(Message::Save),
         ]
         .spacing(10);
@@ -286,23 +297,17 @@ async fn save_macro(
     protein: f32,
     carbohydrates: f32,
     fat: f32,
-    weight: i16,
-    kcalories: i16,
-) -> Result<String, Error> {
-    // BUG: redo the types so the types correspond to the Postgres/sqlx
+    weight: f32,
+    kcalories: f32,
+) -> Result<uuid::Uuid, Error> {
     let result = keto::MacroFood::new(name, protein, carbohydrates, fat, weight, kcalories)
         .save()
         .await;
-    dbg!(
-        "The values passed: {} {} {} {} {} {}",
-        &name,
-        &protein,
-        &carbohydrates,
-        &fat,
-        &weight,
-        &kcalories
-    );
-    Ok("".to_string())
+    if let Ok(uuid) = result {
+        Ok(uuid)
+    } else {
+        Err(Error::DBErrorCannotSave)
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

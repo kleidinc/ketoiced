@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS "macro_food" (
     protein numeric,
     carbohydrates numeric,
     fat numeric,
-    kcalories smallint NOT NULL,
-    weight smallint NOT NULL
+    kcalories numeric,
+    weight numeric
 );
 
 INSERT INTO
@@ -19,5 +19,12 @@ INSERT INTO
         weight
     )
 VALUES
-    ('meat', '12.3', '0.0', '12.3', 253, 259),
-    ('bone broth', '12.3', '0.0', '12.3', 253, 259);
+    ('meat', '12.3', '0.0', '12.3', 253.0, 259.0),
+    (
+        'bone broth',
+        '12.3',
+        '0.0',
+        '12.3',
+        253.0,
+        259.0
+    );

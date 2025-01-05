@@ -1,36 +1,38 @@
 #![allow(dead_code, unused_variables)]
-use crate::Error;
-use rust_decimal::Decimal;
+use std::str::FromStr;
+
+use crate::{helper, Error};
+use bigdecimal::BigDecimal;
 use sqlx::postgres::PgPool;
 
 #[derive(Debug, Clone, sqlx::FromRow, PartialEq)]
 pub struct MacroFood {
     pub macro_id: uuid::Uuid,
     pub name: String,
-    pub protein: Decimal,
-    pub carbohydrates: Decimal,
-    pub fat: Decimal,
-    pub weight: i16,
-    pub kcalories: i16,
+    pub protein: BigDecimal,
+    pub carbohydrates: BigDecimal,
+    pub fat: BigDecimal,
+    pub weight: BigDecimal,
+    pub kcalories: BigDecimal,
 }
 
 impl MacroFood {
     pub fn new(
         name: String,
-        protein: Decimal,
-        carbohydrates: Decimal,
-        fat: Decimal,
-        weight: i16,
-        kcalories: i16,
+        protein: f32,
+        carbohydrates: f32,
+        fat: f32,
+        weight: f32,
+        kcalories: f32,
     ) -> Self {
         Self {
             macro_id: uuid::Uuid::new_v4(), // not used anywhere
             name,
-            protein,
-            carbohydrates,
-            fat,
-            weight,
-            kcalories,
+            protein: helper::convert_from_f32_to_bigdecimal(protein),
+            carbohydrates: helper::convert_from_f32_to_bigdecimal(carbohydrates),
+            fat: helper::convert_from_f32_to_bigdecimal(fat),
+            weight: helper::convert_from_f32_to_bigdecimal(weight),
+            kcalories: helper::convert_from_f32_to_bigdecimal(kcalories),
         }
     }
 
