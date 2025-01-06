@@ -25,16 +25,7 @@ use helper::parse_to_number;
 
 use std::io::ErrorKind;
 
-// TODO: Add focusable to input widgets and add keyshortcuts tab and shift tab to move around the form
-// TODO: Add keyshortcut C-s to save the form
-
 fn main() -> Result<(), IcedError> {
-    // we need to activate the db pool
-    // let pool = PgPool::connect("postgres://alex:1234@localhost/kedoiced")
-    //     .await
-    //     .unwrap();
-    //
-    //
     iced::application("Experiment", Keto::update, Keto::view)
         .subscription(Keto::subscription)
         .theme(Keto::theme)
