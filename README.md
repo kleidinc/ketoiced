@@ -36,3 +36,7 @@ This is done by using `iced::event::{self, Event}` and `iced::Subscription`. You
 define those keystrokes to correspond to specific messages. For navigating you can use `key::Named::Tab` and the modifiers.
 
 Still todo is the C-s for using the save button on the MacroForm.
+
+## Adding a Modal for MacroFood form
+
+This modal should clear all fields on save and close the Modal after save.
