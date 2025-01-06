@@ -266,9 +266,17 @@ impl Keto {
                     }
                 }
                 Event::Keyboard(keyboard::Event::KeyPressed {
-                    key: keyboard::Key::Named(key::Named::Escape),
+                    key: keyboard::Key::Named(key::Named::Control),
+                    modifiers,
                     ..
-                }) => Task::none(),
+                }) => {
+                    if modifiers.alt() {
+                        // TODO: run a Task
+                        Task::none()
+                    } else {
+                        Task::none()
+                    }
+                }
                 _ => Task::none(),
             },
         }
