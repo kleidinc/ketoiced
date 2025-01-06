@@ -1,21 +1,33 @@
 # Mission : Implement a Form with Iced, Postgres and SQLX
 
+## Checking the type of input fields
+
 The text_input (iced version 0.13), as the name implies, can only handle text. But, for many fields we need
-to process numbers. All functionality (moving from one input field to the other, checks on input,...) we take
-for granted in JS web-development, has to be coded in Rust and iced.
+to process numbers.
 
-But the added benefits of robust code, full control, and the ability to create desktop apps, is more than worth it.
+- Parse the String into a f32/i32 with a feedback loop.
+- Don't allow to save the form if any of the input_fields of the form contain erroneous types.
+- When there is an erroneous type in an input_field show a hint under the text_input.
 
-## For input fields (WIP)
+**_ The `number_input` in the iced_aw crate is 'erroneous', and also has the limitation that you
+need to use the mouse to change the value. Therefore it was 'temporarily' discarded. _**
 
-1. Parse the String into a f32/i32 with a feedback loop.
-2. Don't allow to save the form if any of the input_fields of the form contain erroneous types.
-3. When there is an erroneous type in an input_field show a hint under the text_input.
-4. Add tab-navigation. Activate the tab-key to go from one text_input to another. And shift-tab
-   to go back-wards.
-5. Add C-S short-cut to save a form.
+## Converting String to f32 to BigDecimal and back
 
-**_ The `number_input` in the iced_aw crate is erroneous, and also has the limitation that you
-need to use the mouse to change the value. Therefore it was discarded. _**
+The text_input fields can only take String, so we need to parse them to f32. To write to Postgres we have to
+convert them to Numeric, which in Rust (for SQLX types) is BigDecimal. There is no direct correct conversion
+from f32 to BigDecimal, so we use an intermediate conversion to str and then to BigDecimal.
 
-## TODO
+Created helper functions to parse from String to f32, and from f32 to BigDecimal.
+
+## TODO: Connecting to Postgres
+
+For now I start the connection in each write/read/... function. Although this works it is better to create a
+pool once at the start and then share it amongst all the methods. Need to put it in the new function of Iced in a
+Task::batch command.
+
+## TODO: Navigating using tabs and keymappings for shortcuts
+
+- Add tab-navigation. Activate the tab-key to go from one text_input to another. And shift-tab
+  to go back-wards.
+- Add C-S short-cut to save a form.
