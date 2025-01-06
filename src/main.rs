@@ -25,6 +25,8 @@ use std::io::ErrorKind;
 // TODO: Add focusable to input widgets and add keyshortcuts tab and shift tab to move around the form
 // TODO: Add keyshortcut C-s to save the form
 
+static HELPER_TXT_NUM: &str = "Please provide a number in the form 22.5 in grams.";
+
 struct Keto {
     marco_name: String,
     macro_name_is_ok: bool,
@@ -128,7 +130,7 @@ impl Keto {
                 } else {
                     // result is Error::NotParseAbleToNumber
                     self.carbohydrates_is_ok = false;
-                    self.carbohydrates_hint = String::from("Please provide a number!");
+                    self.carbohydrates_hint = HELPER_TXT_NUM.to_string()
                 }
                 Task::none()
             }
@@ -144,7 +146,7 @@ impl Keto {
                     self.protein_hint = String::new();
                 } else {
                     self.protein_is_ok = false;
-                    self.protein_hint = "Please provide a number!".to_string();
+                    self.protein_hint = HELPER_TXT_NUM.to_string();
                 }
                 Task::none()
             }
@@ -160,7 +162,7 @@ impl Keto {
                     self.fat_hint = String::new();
                 } else {
                     self.fat_is_ok = false;
-                    self.fat_hint = String::from("Has to be a number");
+                    self.fat_hint = HELPER_TXT_NUM.to_string();
                 }
                 Task::none()
             }
@@ -175,7 +177,7 @@ impl Keto {
                     self.weight_hint = String::new();
                 } else {
                     self.weight_is_ok = false;
-                    self.weight_hint = String::from("Has to be a number");
+                    self.weight_hint = HELPER_TXT_NUM.to_string();
                 }
                 Task::none()
             }
@@ -190,7 +192,7 @@ impl Keto {
                     self.kcalories_is_ok = true;
                 } else {
                     self.kcalories_is_ok = false;
-                    self.kcalories_hint = String::from("Has to be a number");
+                    self.kcalories_hint = HELPER_TXT_NUM.to_string();
                 }
 
                 Task::none()
@@ -238,8 +240,7 @@ impl Keto {
 
     fn view(&self) -> Element<Message> {
         //
-        // Activate the connectiontionpool here
-        //
+        // save can only be done when all fields are the correct type
         let save_button = if self.macro_name_is_ok
             && self.protein_is_ok
             && self.fat_is_ok
@@ -249,7 +250,8 @@ impl Keto {
         {
             button("Save").on_press_maybe(Some(Message::Save))
         } else {
-            button("Inactive Save")
+            // TODO: change the style of the button
+            button("Inactive Save - make sure all fields are correct")
         };
         let form = column![
             text_input("Name of Macro", &self.marco_name)
