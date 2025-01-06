@@ -3,11 +3,25 @@ name = "ketoiced"
 version = "0.1.0"
 edition = "2021"
 
+
 [dependencies]
 anyhow = "1.0.95"
 bigdecimal = "0.4.7"
-iced = { version = "0.13.1", features = ["image", "markdown", "multi-window", "tokio", "advanced"] }
+iced = { version = "0.14.0-dev", default-features = false, features = [
+    "wgpu",
+    "tiny-skia",
+    "fira-sans",
+    "tokio",
+    "lazy",
+    "advanced",
+    "markdown",
+    "image",
+] }
 rust_decimal = "1.36.0"
 sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio", "time", "uuid", "migrate", "macros", "bigdecimal"] }
 tokio = { version = "1.42.0", features = ["full"] }
 uuid = {version = "1.11.0", features = ["v4", "fast-rng"] }
+
+[patch.crates-io]
+iced = { git = "https://github.com/iced-rs/iced", rev = "f2c9b6b2ffc50d67d9789e77cb55eeb2a0ebe470" }
+iced_core = { git = "https://github.com/iced-rs/iced", rev = "f2c9b6b2ffc50d67d9789e77cb55eeb2a0ebe470" }
