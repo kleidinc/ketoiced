@@ -198,6 +198,7 @@ impl Keto {
             Message::Save => {
                 // Only save if all types of the fields is correct 'ok'
                 if self.carbohydrates_is_ok
+                    && self.macro_name_is_ok
                     && self.protein_is_ok
                     && self.fat_is_ok
                     && self.weight_is_ok
@@ -239,6 +240,17 @@ impl Keto {
         //
         // Activate the connectiontionpool here
         //
+        let save_button = if self.macro_name_is_ok
+            && self.protein_is_ok
+            && self.fat_is_ok
+            && self.carbohydrates_is_ok
+            && self.weight_is_ok
+            && self.kcalories_is_ok
+        {
+            button("Save").on_press_maybe(Some(Message::Save))
+        } else {
+            button("Inactive Save")
+        };
         let form = column![
             text_input("Name of Macro", &self.marco_name)
                 .on_input(Message::MacroNameOnChange)
@@ -269,7 +281,7 @@ impl Keto {
                 .on_input(Message::KcalOnChange)
                 .on_submit(Message::Focus("Name_Of_Macro")),
             text(&self.kcalories_hint),
-            button("Save").on_press(Message::Save),
+            save_button
         ]
         .spacing(10);
         form.into()
