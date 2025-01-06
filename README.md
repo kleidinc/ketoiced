@@ -26,8 +26,13 @@ For now I start the connection in each write/read/... function. Although this wo
 pool once at the start and then share it amongst all the methods. Need to put it in the new function of Iced in a
 Task::batch command.
 
-## TODO: Navigating using tabs and keymappings for shortcuts
+## Navigating using tabs and keymappings for shortcuts
 
 - Add tab-navigation. Activate the tab-key to go from one text_input to another. And shift-tab
   to go back-wards.
 - Add C-S short-cut to save a form.
+
+This is done by using `iced::event::{self, Event}` and `iced::Subscription`. You subscribe to key strokes, and
+define those keystrokes to correspond to specific messages. For navigating you can use `key::Named::Tab` and the modifiers.
+
+Still todo is the C-s for using the save button on the MacroForm.
