@@ -10,9 +10,12 @@ mod keto;
 
 use anyhow::{Context, Error as AnyhowError};
 use bigdecimal::BigDecimal;
+use iced::event::{self, Event};
+use iced::keyboard;
+use iced::keyboard::key;
 use iced::widget::{self, button, column, container, row, text, text_input};
 use iced::Error as IcedError;
-use iced::{Application, Element, Task, Theme};
+use iced::{Application, Element, Subscription, Task, Theme};
 use rust_decimal::Decimal;
 use sqlx::error::Error as SQLXError;
 use sqlx::postgres::PgConnection;
@@ -24,6 +27,19 @@ use std::io::ErrorKind;
 
 // TODO: Add focusable to input widgets and add keyshortcuts tab and shift tab to move around the form
 // TODO: Add keyshortcut C-s to save the form
+
+fn main() -> Result<(), IcedError> {
+    // we need to activate the db pool
+    // let pool = PgPool::connect("postgres://alex:1234@localhost/kedoiced")
+    //     .await
+    //     .unwrap();
+    //
+    //
+    iced::application("Experiment", Keto::update, Keto::view)
+        .subscription(Keto::subscription)
+        .theme(Keto::theme)
+        .run_with(Keto::new)
+}
 
 static HELPER_TXT_NUM: &str = "Please provide a number in the form 22.5 in grams.";
 
@@ -76,6 +92,7 @@ enum Message {
     Save,
     SaveResult(Result<uuid::Uuid, Error>),
     ShowResult(Result<keto::MacroFood, Error>),
+    Event(Event),
 }
 
 impl Keto {
@@ -236,6 +253,24 @@ impl Keto {
                 }
             }
             Message::Focus(id) => return text_input::focus(id),
+            Message::Event(event) => match event {
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key: keyboard::Key::Named(key::Named::Tab),
+                    modifiers,
+                    ..
+                }) => {
+                    if modifiers.shift() {
+                        widget::focus_previous()
+                    } else {
+                        widget::focus_next()
+                    }
+                }
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key: keyboard::Key::Named(key::Named::Escape),
+                    ..
+                }) => Task::none(),
+                _ => Task::none(),
+            },
         }
     }
 
@@ -293,18 +328,10 @@ impl Keto {
     fn theme(&self) -> Theme {
         Theme::Dark
     }
-}
 
-fn main() -> Result<(), IcedError> {
-    // we need to activate the db pool
-    // let pool = PgPool::connect("postgres://alex:1234@localhost/kedoiced")
-    //     .await
-    //     .unwrap();
-    //
-    //
-    iced::application("Experiment", Keto::update, Keto::view)
-        .theme(Keto::theme)
-        .run_with(Keto::new)
+    fn subscription(&self) -> Subscription<Message> {
+        event::listen().map(Message::Event)
+    }
 }
 
 // When the macro is saved correctly we will get back a uuid
