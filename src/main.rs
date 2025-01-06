@@ -10,7 +10,7 @@ mod keto;
 
 use anyhow::{Context, Error as AnyhowError};
 use bigdecimal::BigDecimal;
-use iced::widget::{button, column, container, row, text, text_input};
+use iced::widget::{self, button, column, container, row, text, text_input};
 use iced::Error as IcedError;
 use iced::{Application, Element, Task, Theme};
 use rust_decimal::Decimal;
@@ -190,6 +190,7 @@ impl Keto {
                     self.kcalories_f32 = result;
                     self.kcalories_hint = String::new();
                     self.kcalories_is_ok = true;
+                    // widget::focus_next();
                 } else {
                     self.kcalories_is_ok = false;
                     self.kcalories_hint = HELPER_TXT_NUM.to_string();
