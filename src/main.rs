@@ -10,6 +10,7 @@ mod keto;
 
 use anyhow::{Context, Error as AnyhowError};
 use bigdecimal::BigDecimal;
+use iced::advanced::graphics::core::SmolStr;
 use iced::event::{self, Event};
 use iced::keyboard;
 use iced::keyboard::key;
@@ -23,6 +24,7 @@ use sqlx::postgres::PgPool;
 
 use helper::parse_to_number;
 
+use std::char;
 use std::io::ErrorKind;
 
 fn main() -> Result<(), IcedError> {
@@ -263,6 +265,19 @@ impl Keto {
                 }) => {
                     if modifiers.alt() {
                         // TODO: run a Task
+                        Task::none()
+                    } else {
+                        Task::none()
+                    }
+                }
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key: keyboard::Key::Character(character_pressed),
+                    modified_key,
+                    ..
+                }) => {
+                    let control_s: SmolStr = "s".into();
+                    if character_pressed == control_s {
+                        // do something serious
                         Task::none()
                     } else {
                         Task::none()
