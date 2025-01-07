@@ -277,7 +277,7 @@ impl Keto {
                 }) => {
                     let control_s: SmolStr = "s".into();
                     if character_pressed == control_s {
-                        // do something serious
+                        // TODO: fix Control S to launch the SAVE task
                         Task::none()
                     } else {
                         Task::none()
